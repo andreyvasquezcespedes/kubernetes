@@ -1,0 +1,131 @@
+
+# ==========================================================
+# GRAFANA ALLOY
+# Helm Chart: grafana/alloy
+# Chart Version: 1.16.0
+# Namespace: monitoring
+# Controller: DaemonSet
+# ==========================================================
+
+# Identificación
+fullnameOverride: alloy
+namespaceOverride: monitoring
+
+# CRDs
+crds:
+  create: false
+
+# ==========================================================
+# RBAC
+# ==========================================================
+rbac:
+  create: true
+  namespaces: []
+
+# ==========================================================
+# SERVICE ACCOUNT
+# ==========================================================
+serviceAccount:
+  create: true
+  automountServiceAccountToken: true
+
+# ==========================================================
+# ALLOY
+# ==========================================================
+alloy:
+
+  # Configuración externa mediante ConfigMap
+  configMap:
+    create: false
+    name: alloy-config
+    key: config.alloy
+
+  # Deshabilitar clustering
+  clustering:
+    enabled: false
+
+  stabilityLevel: generally-available
+
+  # Almacenamiento interno
+  storagePath: /tmp/alloy
+
+  # Servidor HTTP
+  enableHttpServerPort: true
+  listenAddr: 0.0.0.0
+  listenPort: 12345
+  listenScheme: HTTP
+
+  # Variables de entorno
+  extraEnv:
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+
+  # Montaje de directorios del nodo
+  mounts:
+    varlog: true
+    dockercontainers: false
+
+  # Recursos
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# ==========================================================
+# CONFIG RELOADER
+# ==========================================================
+configReloader:
+  enabled: true
+
+# ==========================================================
+# CONTROLLER
+# ==========================================================
+controller:
+  type: daemonset
+
+  hostNetwork: false
+  hostPID: false
+
+  terminationGracePeriodSeconds: 30
+
+  # Estrategia de actualización
+  updateStrategy:
+    type: RollingUpdate
+
+  # No utilizar HPA
+  autoscaling:
+    enabled: false
+
+    horizontal:
+      enabled: false
+
+      # Sin controlador externo
+      externalHPA: false
+
+    # No utilizar VPA
+    vertical:
+      enabled: false
+
+# ==========================================================
+# SERVICE
+# ==========================================================
+service:
+  enabled: true
+  type: ClusterIP
+
+# ==========================================================
+# SERVICE MONITOR
+# ==========================================================
+serviceMonitor:
+  enabled: false
+
+# ==========================================================
+# NETWORK POLICY
+# ==========================================================
+networkPolicy:
+  enabled: false

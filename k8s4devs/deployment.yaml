@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: andrey-deploy
+  name: andrey-deploy
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: andrey-deploy
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: andrey-deploy
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        resources: {}
+status: {}

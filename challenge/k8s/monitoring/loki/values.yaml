@@ -1,0 +1,89 @@
+
+# Loki - Configuracion para Minikube
+# Helm chart: grafana-community/loki
+# Chart version: 21.6.0
+# Loki version: 3.7.10
+
+deploymentMode: Monolithic
+
+# Configuracion principal de Loki
+loki:
+  auth_enabled: false
+
+  commonConfig:
+    replication_factor: 1
+
+  # Esquema de almacenamiento TSDB
+  schemaConfig:
+    configs:
+      - from: "2024-04-01"
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+
+  # Almacenamiento local
+  storage:
+    type: filesystem
+    filesystem:
+      chunks_directory: /var/loki/chunks
+      rules_directory: /var/loki/rules
+
+  # Politica de retencion
+  limits_config:
+    retention_period: 72h
+
+  compactor:
+    retention_enabled: true
+    delete_request_store: filesystem
+
+# Loki en modo monolitico: una sola replica
+singleBinary:
+  enabled: true
+  replicas: 1
+
+  persistence:
+    enabled: true
+    storageClass: standard
+    accessModes:
+      - ReadWriteOnce
+    size: 2Gi
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 768Mi
+
+# Deshabilitar componentes de otros modos
+backend:
+  replicas: 0
+
+read:
+  replicas: 0
+
+write:
+  replicas: 0
+
+# Deshabilitar gateway
+gateway:
+  enabled: false
+
+# Deshabilitar caches para reducir consumo
+chunksCache:
+  enabled: false
+
+resultsCache:
+  enabled: false
+
+# Deshabilitar pruebas automaticas adicionales
+test:
+  enabled: false
+
+# Deshabilitar Loki Canary para reducir consumo de recursos
+lokiCanary:
+  enabled: false

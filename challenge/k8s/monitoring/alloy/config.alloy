@@ -1,0 +1,97 @@
+
+// ============================================
+// DESCUBRIMIENTO DE PODS EN KUBERNETES
+// ============================================
+
+discovery.kubernetes "pods" {
+  role = "pod"
+}
+
+// ============================================
+// FILTRADO Y ETIQUETADO DE PODS
+// ============================================
+
+discovery.relabel "pod_logs" {
+  targets = discovery.kubernetes.pods.targets
+
+  // Identificar el nodo donde se ejecuta Alloy
+  rule {
+    source_labels = ["__meta_kubernetes_pod_node_name"]
+    action        = "keep"
+    regex         = sys.env("NODE_NAME")
+  }
+
+  // Namespace de Kubernetes
+  rule {
+    source_labels = ["__meta_kubernetes_namespace"]
+    target_label  = "namespace"
+  }
+
+  // Nombre del pod
+  rule {
+    source_labels = ["__meta_kubernetes_pod_name"]
+    target_label  = "pod"
+  }
+
+  // Nombre del contenedor
+  rule {
+    source_labels = ["__meta_kubernetes_pod_container_name"]
+    target_label  = "container"
+  }
+
+  // Nombre de la aplicación, cuando existe esa etiqueta
+  rule {
+    source_labels = ["__meta_kubernetes_pod_label_app"]
+    target_label  = "app"
+  }
+
+  // Ruta de los archivos de logs del contenedor
+  rule {
+    source_labels = [
+      "__meta_kubernetes_namespace",
+      "__meta_kubernetes_pod_name",
+      "__meta_kubernetes_pod_uid",
+      "__meta_kubernetes_pod_container_name",
+    ]
+
+    separator = "_"
+    regex     = "([^_]+)_([^_]+)_([^_]+)_([^_]+)"
+    target_label = "__path__"
+    replacement  = "/var/log/pods/${1}_${2}_${3}/${4}/*.log"
+  }
+}
+
+// ============================================
+// LECTURA DE LOGS
+// ============================================
+
+loki.source.file "pod_logs" {
+  targets    = discovery.relabel.pod_logs.output
+  forward_to = [loki.process.pod_logs.receiver]
+
+  // Descubrir los archivos que coincidan con __path__
+  file_match {
+    enabled     = true
+    sync_period = "10s"
+  }
+}
+
+// ============================================
+// PROCESAMIENTO DE LOGS CRI
+// ============================================
+
+loki.process "pod_logs" {
+  stage.cri {}
+
+  forward_to = [loki.write.default.receiver]
+}
+
+// ============================================
+// ENVÍO DE LOGS A LOKI
+// ============================================
+
+loki.write "default" {
+  endpoint {
+    url = "http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push"
+  }
+}

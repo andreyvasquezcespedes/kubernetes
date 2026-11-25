@@ -1,0 +1,83 @@
+prometheus:
+  enabled: true
+
+  prometheusSpec:
+    replicas: 1
+
+    # Retención de métricas
+    retention: 3d
+    retentionSize: "1GB"
+
+    # Recursos para Minikube
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+
+    # Almacenamiento persistente
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: standard
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 2Gi
+
+# --------------------------------------------------
+# Grafana
+# --------------------------------------------------
+grafana:
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      access: proxy
+      url: http://loki.monitoring.svc.cluster.local:3100
+      isDefault: false
+      editable: true
+
+  enabled: true
+
+  # Persistencia para dashboards y configuración
+  persistence:
+    enabled: true
+    type: pvc
+    storageClassName: standard
+    accessModes:
+      - ReadWriteOnce
+    size: 1Gi
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 512Mi
+
+  # Dashboards predefinidos
+  defaultDashboardsEnabled: true
+
+# --------------------------------------------------
+# Alertmanager
+# --------------------------------------------------
+# Se deshabilita inicialmente para ahorrar recursos.
+# Podremos habilitarlo posteriormente si lo necesitamos.
+alertmanager:
+  enabled: false
+
+# --------------------------------------------------
+# kube-state-metrics
+# --------------------------------------------------
+kubeStateMetrics:
+  enabled: true
+
+# --------------------------------------------------
+# Node Exporter
+# --------------------------------------------------
+nodeExporter:
+  enabled: true

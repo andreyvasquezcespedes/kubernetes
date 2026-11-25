@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teemii-backend
+  namespace: teemii
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: teemii-backend
+  template:
+    metadata:
+      labels:
+        app: teemii-backend
+    spec:
+      initContainers:
+        - name: init-data-directories
+          image: dokkaner/teemii-backend
+          command:
+            - sh
+            - -c
+            - |
+              mkdir -p \
+                /data/conf \
+                /data/medias \
+                /data/backups \
+                /data/logs \
+                /data/sqlite \
+                /data/temp
+              echo "Directorios de Teemii creados correctamente"
+          volumeMounts:
+            - name: teemii-data
+              mountPath: /data
+      containers:
+        - name: backend
+          image: dokkaner/teemii-backend
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 3000
+            - name: websocket
+              containerPort: 1555
+          volumeMounts:
+            - name: teemii-data
+              mountPath: /data
+      volumes:
+        - name: teemii-data
+          persistentVolumeClaim:
+            claimName: teemii-data-pvc

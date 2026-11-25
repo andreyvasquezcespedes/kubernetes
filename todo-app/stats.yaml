@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stats-cache
+spec:
+  selector:
+    matchLabels:
+      name: stats-cache
+  template:
+    metadata:
+      labels:
+        name: stats-cache
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      containers:
+        - name: cache
+          image: redis:5-alpine
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stats-cache
+spec:
+  selector:
+    name: stats-cache
+  ports:
+    - port: 6379
+      targetPort: 6379
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stats-queue
+spec:
+  selector:
+    matchLabels:
+      name: stats-queue
+  template:
+    metadata:
+      labels:
+        name: stats-queue
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      containers:
+        - name: queue
+          image: rabbitmq:3-alpine
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stats-queue
+spec:
+  selector:
+    name: stats-queue
+  ports:
+    - port: 5672
+      targetPort: 5672
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stats-worker
+spec:
+  selector:
+    matchLabels:
+      name: stats-worker
+  template:
+    metadata:
+      labels:
+        name: stats-worker
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      containers:
+      - name: stats-worker
+        image: glegelopfalcon/stats-worker:v1
+        envFrom:
+        - configMapRef:
+            name: stats-config
+

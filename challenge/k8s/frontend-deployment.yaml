@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teemii-frontend
+  namespace: teemii
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: teemii-frontend
+  template:
+    metadata:
+      labels:
+        app: teemii-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: dokkaner/teemii-frontend
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 80
