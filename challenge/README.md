@@ -1,4 +1,4 @@
-# Kubernetes Challenge – Teemii
+[# Kubernetes Challenge – Teemii
 
 ## 1. Descripción general
 
@@ -966,12 +966,3 @@ Posteriormente se incorporaron herramientas de monitoreo y observabilidad para o
 La solución demuestra cómo integrar Kubernetes, Helm, Prometheus, Grafana, Loki y Alloy para construir una plataforma local de despliegue y observabilidad.
 
 El proyecto queda documentado como una base reproducible para continuar experimentando con administración de clústeres, monitoreo, almacenamiento, automatización y prácticas DevOps.
-
----
-
-**Repositorio:** [Kubernetes Challenge](https://github.com/andreyvasquezcespedes/kubernetes/tree/main/challenge)
-
-**Autor:** Andrey Vásquez  
-**Entorno:** Ubuntu / Vagrant / VirtualBox / Minikube  
-**Namespace de aplicación:** `teemii`  
-**Namespace de observabilidad:** `monitoring`
